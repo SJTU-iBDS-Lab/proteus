@@ -1,0 +1,32 @@
+# Single source of truth for model selection across all stages.
+#
+# All callers (red team mutator/extractor/evolver, blue team auditors,
+# AIG gray-box scanner, sandbox target) name models by their LiteLLM
+# proxy id.  Routing from id → upstream provider lives in your local
+# LiteLLM proxy configuration, outside the core repository.  Changing
+# target/mutator/etc. is a single edit here.  Credentials live in the
+# environment; this file holds NO secrets.
+
+# Red team agent — drives mutation, family enumeration, surface
+# expansion, and the offline memory extractor.
+red_team:
+  mutator:    deepseek-v4-pro
+  extractor:  deepseek-v4-pro
+  evolver:    deepseek-v4-pro
+
+# Blue team auditors — paper §3 P1/P2/P3 layered scan.
+blue_team:
+  gatekeeper: glm-5
+  alignment:  glm-5
+  flow_sim:   glm-5
+  fallback:   glm-5
+
+# Sandbox target — the model the OpenClaw container's agent invokes
+# when it follows a poisoned SKILL.md.  This is what we measure
+# whether the red-team poisoning actually tricks.
+sandbox:
+  target: glm-5
+
+# AI-Infra-Guard gray-box scanner — calls upstream via the proxy.
+aig:
+  model: glm-5

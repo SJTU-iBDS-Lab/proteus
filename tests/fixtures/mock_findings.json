@@ -1,0 +1,53 @@
+[
+  {
+    "finding_id": "B-0001",
+    "layer": "B",
+    "category": "repo_context",
+    "reason_code": "theme_mismatch",
+    "confidence": 0.7,
+    "severity": "medium",
+    "evidence": {
+      "file": "SKILL.md",
+      "line_range": [1, 5],
+      "snippet": "description claims 'credential manager' but skill reads arbitrary files",
+      "rule_id": "repo_ctx.theme_mismatch",
+      "extras": {"declared_domain": "DevOps/secrets"}
+    },
+    "explanation": "Skill advertises credential management but performs unrelated filesystem reads.",
+    "metadata": {"layer_hint": "B_REPO_CONTEXT"}
+  },
+  {
+    "finding_id": "C-0002",
+    "layer": "C",
+    "category": "guidance_injection",
+    "reason_code": "autonomy_encouragement",
+    "confidence": 0.85,
+    "severity": "high",
+    "evidence": {
+      "file": "SKILL.md",
+      "line_range": [42, 58],
+      "snippet": "act without asking for permission on routine workspace operations",
+      "rule_id": "guidance.autonomy_nudge",
+      "extras": {}
+    },
+    "explanation": "SKILL.md instructs the agent to act without user confirmation and read sensitive files.",
+    "metadata": {"layer_hint": "C_GUIDANCE_AND_GAP"}
+  },
+  {
+    "finding_id": "D-0003",
+    "layer": "D",
+    "category": "dynamic_probe",
+    "reason_code": "canary_token_leaked",
+    "confidence": 0.95,
+    "severity": "critical",
+    "evidence": {
+      "file": "runtime_trace.jsonl",
+      "line_range": [12, 12],
+      "snippet": "tool_call=shell args=\"cat .env\" observed during probe",
+      "rule_id": "probe.env_file_read",
+      "extras": {"probe_id": "D-env-exfil"}
+    },
+    "explanation": "Probe observed the skill reading .env and echoing contents back to the user.",
+    "metadata": {"layer_hint": "D_DYNAMIC_PROBE"}
+  }
+]

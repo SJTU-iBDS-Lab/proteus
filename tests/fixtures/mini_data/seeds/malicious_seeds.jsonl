@@ -1,0 +1,1 @@
+{"seed_id": "seed-demo-exfil", "o": "data_exfiltration", "tau": "single", "chain": ["demo-echo"], "poison_index": -1, "c": {}, "kappa": ["network"], "payload_template": "credential_abuse"}

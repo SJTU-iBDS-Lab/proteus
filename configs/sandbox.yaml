@@ -1,0 +1,6 @@
+# Sandbox configuration for OpenClaw eval runner.
+# Override via CLI flags or environment variables.
+
+container_name: skillrt-openclaw
+image: openclaw-eval:latest
+timeout: 300  # seconds per seed execution

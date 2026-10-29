@@ -1,0 +1,125 @@
+[project]
+name = "claw-attack"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "litellm[proxy]>=1.50",
+    "openai>=2.32.0",
+    "pydantic>=2.12.5",
+    "python-dotenv>=1.2.2",
+    "pyyaml>=6.0.3",
+    "rank-bm25>=0.2.2",
+]
+
+[dependency-groups]
+dataset = [
+    "networkx>=3.0",
+    "sentence-transformers>=3.0",
+    "torch>=2.8.0",
+    "scikit-learn>=1.5",
+]
+dev = [
+    "prek>=0.3.8",
+    "prettier>=0.0.7",
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.2.0",
+    "pytest-cov>=7.0.0",
+    "pyright>=1.1.408",
+    "ruff>=0.15.9",
+    "import-linter>=2.11",
+]
+
+[tool.pyright]
+include = ["src", "tests"]
+extraPaths = ["src", "."]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cu128", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+# ---------------------------------------------------------------------------
+# import-linter: enforces the red-team layering contract declared in
+# src/red_team/README.md.  Run locally with:
+#     uv run lint-imports
+# (requires the dev dependency `import-linter` to be installed).
+# ---------------------------------------------------------------------------
+[tool.importlinter]
+root_packages = [
+    "core",
+    "llm",
+    "sandbox",
+    "red_team",
+]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "红队分层禁反向"
+type = "layers"
+layers = [
+    "red_team.campaign",
+    "red_team.evolution",
+    "red_team.mutation",
+    "red_team.agent",
+    "red_team.oracle",
+    "red_team.log",
+    "red_team.payloads",
+    "sandbox",
+    "llm",
+    "core",
+]
+# Accepted legacy edges — documented tech debt; each has a follow-up path.
+ignore_imports = [
+    # evolution.driver 是 campaign.runner 的向后兼容 shim；W5-driver-split 留存。
+    "red_team.evolution.driver -> red_team.campaign.runner",
+    # agent.mutator 会在下一轮搬到 mutation/（它是"从 LLM 输出造 mutation"的逻辑）。
+    "red_team.agent.mutator -> red_team.mutation.search_space",
+    # baselines.random_mutation 独立老模块；mutation.strategies.random 已经是新 adapter，
+    # baseline 内部仍用 SearchSpace 校验——后续合并到 strategies 即可消除。
+    "red_team.baselines.random_mutation -> red_team.mutation.search_space",
+    # sandbox.openclaw_chain_runner 保留 materialize_poisoned_chain + build_poisoned_prompt
+    # 两个兼容 wrapper（懒 import 自 red_team.payloads），供现有 runner 调用方不改。
+    "sandbox.openclaw_chain_runner -> red_team.payloads.doc",
+    "sandbox.openclaw_chain_runner -> red_team.payloads.prompts",
+]
+
+[[tool.importlinter.contracts]]
+name = "sandbox 不 import red_team 上层"
+type = "forbidden"
+source_modules = [
+    "sandbox",
+]
+# NOTE: ``red_team.payloads`` is intentionally NOT in the forbidden list.
+# ``sandbox.materialize_*`` currently imports ``red_team.payloads.doc``
+# (W5-materialize-move tracks the move of materialize_* out of sandbox).
+# Until that move lands, sandbox → payloads is an accepted legacy edge.
+forbidden_modules = [
+    "red_team.evolution",
+    "red_team.campaign",
+    "red_team.mutation",
+    "red_team.agent",
+    "red_team.oracle",
+]
+
+[[tool.importlinter.contracts]]
+name = "core 不 import 业务模块"
+type = "forbidden"
+source_modules = [
+    "core",
+]
+forbidden_modules = [
+    "red_team",
+    "blue_team",
+    "sandbox",
+    "llm",
+]

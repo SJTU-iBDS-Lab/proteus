@@ -1,0 +1,28 @@
+# OpenClaw sandbox container pool — provisioning config.
+#
+# Read by scripts/sandbox/bootstrap_openclaw_pool.sh.  No hardcoded
+# values in the bash; everything below is what changes when you want a
+# different pool shape, target model, or allowlist tier.
+#
+# The model id below MUST exist in configs/models.yaml under
+# sandbox.target — bootstrap reads both files and asserts they agree.
+
+# Pool shape
+prefix: skillrt-openclaw         # container names: <prefix>-00, <prefix>-01, ...
+image:  openclaw-eval:latest
+count:  20
+
+# How the container reaches the LiteLLM proxy.  Default uses the docker
+# bridge gateway IP so containers on the default bridge network see the
+# host's :4000.  If you bind your proxy elsewhere, override here.
+litellm:
+  url: http://172.17.0.1:4000
+  key: sk-claw-local             # local LiteLLM proxy master key
+
+# Exec allowlist tier the bootstrap installs into each container.
+# Tier files live alongside this file: configs/sandbox/allowlist_<tier>.txt
+# - L0  : open=*  (everything allowed; no defense)
+# - L1  : standard productivity baseline (paper §4 main result)
+# - L2  : locked, no exec at all (defense ablation)
+# - L3  : empty (rejects all)
+allowlist_tier: L1

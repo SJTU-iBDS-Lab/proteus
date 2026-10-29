@@ -1,0 +1,1 @@
+{"repo_id": "demo-repo", "one_liner": "fixture repo for tests", "domain": "DevOps", "readme_md": "# demo-repo\n\nA tiny fixture repo used only by red-team tool tests.", "file_tree": ["README.md", "src/main.py"], "theme_summary": "Fixture repository; the red-team agent should reference its README when the tests ask for it."}
